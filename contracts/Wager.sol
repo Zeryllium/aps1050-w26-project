@@ -11,7 +11,7 @@ contract Wager is Ownable {
     struct WagerMatch {
         uint32 matchId;
         uint256 totalPot;
-        bool resolved;
+        bool resolved;  // TODO: Add a way to close matches once all bets are resolved and cashed out
     }
 
     // Mapping for matchId => WagerMatch object
@@ -69,7 +69,7 @@ contract Wager is Ownable {
     }
 
     function claimEarnings(uint32 _matchId) external oracleReady {
-        WagerMatch storage wagerMatch = matches[_matchId];
+        WagerMatch memory wagerMatch = matches[_matchId];
         OracleInterface.Match memory oracleMatch = oracle.getMatchByID(_matchId);
 
         require(oracleMatch.status == OracleInterface.MatchStatus.Finished, "Match is not over");
