@@ -37,9 +37,14 @@ contract Wager is Ownable {
 
     IERC20 public lightToken;
 
+    uint256 public constant FAUCET_TOKEN_AMOUNT = 100 * 10 ** 18;
+    uint256 public constant FAUCET_ETH_AMOUNT = 1 ether;
+
     constructor(address _initialOwner, address _tokenAddress) Ownable(_initialOwner) {
         lightToken = IERC20(_tokenAddress);
     }
+
+    receive() external payable {}
 
     function setupOracle(address _oracleAddress) external onlyOwner returns (bool) {
         require(_oracleAddress != address(0), "Cannot set Oracle to address zero");
@@ -50,6 +55,16 @@ contract Wager is Ownable {
     modifier oracleReady() {
         require(address(oracle) != address(0), "Oracle not set up");
         _;
+    }
+
+    function requestFromFaucet(address _receivingAddress) external {
+        require(lightToken.balanceOf(address(this)) >= FAUCET_TOKEN_AMOUNT, "Faucet out of LIT");
+        require(address(this).balance >= FAUCET_ETH_AMOUNT, "Faucet out of ETH");
+
+        (bool sent, ) = _receivingAddress.call{value: FAUCET_ETH_AMOUNT}("");
+        require(sent, "ETH transfer failed");
+        require(lightToken.transfer(_receivingAddress, FAUCET_TOKEN_AMOUNT), "LIT transfer failed");
+
     }
 
     function placeBet(uint32 _matchId, uint32 _chosenTeamId, uint256 _amount) external oracleReady {

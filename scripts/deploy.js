@@ -42,6 +42,27 @@ async function main() {
   await wager.deployed();
   console.log("Wager address:", wager.address);
 
+  // Tell Wager the Oracle's address
+  const setUpOracleTx = await wager.setupOracle(oracle.address);
+  await setUpOracleTx.wait();
+  console.log("Oracle linked to Wager smart contract")
+
+  // Add the minted tokens to Wager
+  const tokensToTransfer = ethers.utils.parseUnits("1000000", 18);
+  const transferTx = await token.transfer(wager.address, tokensToTransfer);
+  await transferTx.wait();
+  console.log(`Wager LIT balance: ${
+    ethers.utils.formatUnits(await token.balanceOf(wager.address), 18)
+  }`);
+
+  // Add ETH funds to Wager
+  await deployer.sendTransaction({
+    to: wager.address,
+    value: ethers.utils.parseEther("1000.0"),
+  })
+  console.log(`Wager ETH balance: ${
+      ethers.utils.formatEther(await ethers.provider.getBalance(wager.address))
+  }`);
 
   // We also save the contract's artifacts and address in the frontend directory
   saveFrontendFiles(token, oracle, wager);
@@ -71,11 +92,11 @@ function saveFrontendFiles(token, oracle, wager) {
   ]
 
   contractsToDeploy.forEach(contract => {
-    const TokenArtifact = artifacts.readArtifactSync(contract);
+    const contractArtifact = artifacts.readArtifactSync(contract);
 
     fs.writeFileSync(
         path.join(contractsDir, `${contract}.json`),
-        JSON.stringify(TokenArtifact, null, 2)
+        JSON.stringify(contractArtifact, null, 2)
     );
   });
 

@@ -6,6 +6,8 @@ import { ethers } from "ethers";
 // We import the contract's artifacts and address here, as we are going to be
 // using them with ethers
 import TokenArtifact from "../contracts/Token.json";
+import OracleArtifact from "../contracts/Oracle.json";
+import WagerArtifact from "../contracts/Wager.json";
 import contractAddress from "../contracts/contract-address.json";
 
 // All the logic of this dapp is contained in the Dapp component.
@@ -18,6 +20,13 @@ import { Transfer } from "./Transfer";
 import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
+
+/***
+ * ONLY USE THIS FOR LOCAL TESTING
+ * THESE ARE KNOWN KEYS FOR USE IN THE LOCAL HARDHAT TESTNET
+ */
+const SYSTEM_PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+const PROVIDER_URL = "http://127.0.0.1:8545"
 
 // This is the default id used by the Hardhat Network
 const HARDHAT_NETWORK_ID = '31337';
@@ -54,6 +63,20 @@ export class Dapp extends React.Component {
     };
 
     this.state = this.initialState;
+  }
+
+  requestFunds = async() => {
+    try {
+      const userAddress = await this._provider.getSigner(0).getAddress();
+
+      const tx = await this._wagerFaucet.requestFromFaucet(userAddress);
+      await tx.wait();
+      console.log("Transaction completed");
+      alert("Funds received");
+    } catch (error) {
+      console.error(error);
+      alert(`Error: ${error.message ?? "Unable to complete transaction"}`);
+    }
   }
 
   render() {
@@ -97,12 +120,16 @@ export class Dapp extends React.Component {
             <p>
               Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
               <b>
-                {this.state.balance.toString()} {this.state.tokenData.symbol}
+                {this._readBalance()} {this.state.tokenData.symbol}
               </b>
               .
             </p>
           </div>
         </div>
+
+        <hr />
+
+        <button className="font-weight-bold" onClick={this.requestFunds}>Faucet</button>
 
         <hr />
 
@@ -217,6 +244,12 @@ export class Dapp extends React.Component {
     // We first initialize ethers by creating a provider using window.ethereum
     this._provider = new ethers.providers.Web3Provider(window.ethereum);
 
+    // Running the faucet requires a system account to sign txns and pay for gas
+    // as the user likely has a balance of 0
+    const localProvider = new ethers.providers.JsonRpcProvider(PROVIDER_URL);
+    this._systemSigner = new ethers.Wallet(SYSTEM_PRIVATE_KEY, localProvider);
+
+
     // Then, we initialize the contract using that provider and the token's
     // artifact. You can do this same thing with your contracts.
     this._token = new ethers.Contract(
@@ -224,6 +257,27 @@ export class Dapp extends React.Component {
       TokenArtifact.abi,
       this._provider.getSigner(0)
     );
+
+    this._oracle = new ethers.Contract(
+        contractAddress.Oracle,
+        OracleArtifact.abi,
+        this._provider.getSigner(0)
+    );
+
+    // Only use this for the faucet
+    this._wagerFaucet = new ethers.Contract(
+        contractAddress.Wager,
+        WagerArtifact.abi,
+        this._systemSigner
+    );
+
+    // Use this for any user interactions with Wager that is NOT the faucet
+    this._wager = new ethers.Contract(
+        contractAddress.Wager,
+        WagerArtifact.abi,
+        this._provider.getSigner(0)
+    );
+
   }
 
   // The next two methods are needed to start and stop polling data. While
@@ -255,8 +309,12 @@ export class Dapp extends React.Component {
   }
 
   async _updateBalance() {
-    const balance = await this._token.balanceOf(this.state.selectedAddress);
-    this.setState({ balance });
+    const rawBalance = await this._token.balanceOf(this.state.selectedAddress);
+    this.setState({ balance:rawBalance });
+  }
+
+  _readBalance() {
+    return ethers.utils.formatUnits(this.state.balance, 18) ?? "0";
   }
 
   // This method sends an ethereum transaction to transfer tokens.
