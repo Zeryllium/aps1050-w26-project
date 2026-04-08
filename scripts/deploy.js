@@ -2,6 +2,7 @@
 // yours, or create new ones.
 
 const path = require("path");
+const fs = require("fs");
 
 async function main() {
   // This is just a convenience check
@@ -71,6 +72,7 @@ async function main() {
 function saveFrontendFiles(token, oracle, wager) {
   const fs = require("fs");
   const contractsDir = path.join(__dirname, "..", "frontend", "src", "contracts");
+  const testScriptsDir = __dirname;
 
   if (!fs.existsSync(contractsDir)) {
     fs.mkdirSync(contractsDir);
@@ -83,6 +85,16 @@ function saveFrontendFiles(token, oracle, wager) {
       Oracle: oracle.address,
       Wager: wager.address
     }, undefined, 2)
+  );
+
+  // Save a copy of the contract addresses for local testing via the scripts
+  fs.writeFileSync(
+      path.join(testScriptsDir, "contract-address.json"),
+      JSON.stringify({
+        Token: token.address,
+        Oracle: oracle.address,
+        Wager: wager.address
+      }, undefined, 2)
   );
 
   const contractsToDeploy = [

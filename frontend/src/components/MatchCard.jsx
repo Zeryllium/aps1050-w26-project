@@ -207,7 +207,7 @@ export default function MatchCard({ match, token, wager, selectedAddress, isInit
                     disabled={betTeam === match.homeTeam.teamId || isPending || match.status !== MatchStatus.Pending}
                     onClick={(e) => setBetTeam(match.homeTeam.teamId)}
                 >
-                    <div className={"flex flex-col w-1/5 text-left"}>
+                    <div className={"flex flex-col w-full text-left"}>
                         <div className={"text-xl font-bold text-slate-900"}>
                             Home
                         </div>
