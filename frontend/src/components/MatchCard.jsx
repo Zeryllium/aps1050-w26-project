@@ -56,7 +56,7 @@ export default function MatchCard({ match, token, wager, selectedAddress, isInit
     // HandleMatchInfo.updateMatchData
     if (match === undefined) {
         return (
-            <div className={"flex flex-col rounded-2xl bg-white min-h-60 w-full"}>
+            <div className={"flex flex-col rounded-2xl bg-white min-h-60 w-full border border-slate-900"}>
                 <div>
                     Match not loaded yet
                 </div>
@@ -188,7 +188,7 @@ export default function MatchCard({ match, token, wager, selectedAddress, isInit
     }
 
     return (
-        <div className={"flex flex-col rounded-2xl bg-white min-h-60 w-full"}>
+        <div className={"flex flex-col rounded-2xl bg-white min-h-60 w-full border border-slate-900"}>
             <div className={"flex flex-row justify-between p-2"}>
                 <div className={`${UI.textH3Style}`}>
                     Match #{match.matchId}
