@@ -7,10 +7,9 @@ export const MatchStatus = {
     Cancelled: 3
 }
 
-export function handleOracleInfo(contract) {
+export function handleMatchInfo(oracle, wager, selectedAddress, isInitializing) {
     const [trackedMatchIds, setTrackedMatchIds] = useState(new Set());
     const [matchData, setMatchData] = useState({});
-    const [loading, setLoading] = useState(false);
 
     const trackedMatchIdsRef = useRef(trackedMatchIds);
     useEffect(() => {
@@ -18,13 +17,17 @@ export function handleOracleInfo(contract) {
     }, [trackedMatchIds]);
 
     useEffect(() => {
-        if (!contract) {
+        if (isInitializing || !oracle) {
             return;
         }
 
-        const updatePendingMatchIds = async () => {
+        const updateTrackedMatchIds = async () => {
             try {
-                const pendingMatchIds = await contract.getMatchesWithStatus(MatchStatus.Pending);
+                const [pendingMatchIds, historyBetIds, historyClaimedIds] = await Promise.all([
+                    oracle.getMatchesWithStatus(MatchStatus.Pending),
+                    wager.getMatchesWithBets(selectedAddress),
+                    wager.getMatchesWithClaims(selectedAddress)
+                ]);
                 //console.log(`### raw matchIds: ${pendingMatchIds}`);
                 setTrackedMatchIds(old => {
                     const updated = new Set(old);
@@ -32,23 +35,29 @@ export function handleOracleInfo(contract) {
                         //console.log(`### ## raw id: ${matchId} => new id: ${Number(matchId)}`)
                         updated.add(Number(matchId));
                     });
+                    historyBetIds.forEach(matchId => {
+                        updated.add(Number(matchId));
+                    });
+                    // Forget about all matches that have already be finalised and claimed
+                    historyClaimedIds.forEach(matchId => {
+                       updated.delete(Number(matchId));
+                    });
                     return updated
                 });
             } catch (error) {
-                console.error(error.message ?? "Failed to get pending matches");
+                console.error(error.message ?? "Failed to get tracked match Ids");
             }
         }
 
         const updateTrackedMatchInformation = async () => {
             try {
                 const matchIds = Array.from(trackedMatchIdsRef.current);
-                // console.log(`matchIds.length: ${matchIds.length} || isloading? ${loading}`)
-                if (matchIds.length === 0 || loading) {
+                // console.log(`matchIds.length: ${matchIds.length}`)
+                if (matchIds.length === 0) {
                     return;
                 }
-                setLoading(true);
 
-                const matchPromises = matchIds.map((matchId) => contract.getMatchByID(matchId));
+                const matchPromises = matchIds.map((matchId) => oracle.getMatchByID(matchId));
                 const results = await Promise.all(matchPromises);
 
                 const matchInformation = {};
@@ -79,21 +88,19 @@ export function handleOracleInfo(contract) {
 
             } catch (error) {
                 console.error(error.message ?? "Could not fetch matches from Oracle");
-            } finally {
-                setLoading(false);
             }
         }
 
         // 60 seconds before querying new match IDs
-        const findNewMatches = setInterval(updatePendingMatchIds, 60000);
+        const findNewMatches = setInterval(updateTrackedMatchIds, 10000);
         // 30 seconds between each tracked match information refresh
-        const updateMatchData = setInterval(updateTrackedMatchInformation, 30000);
+        const updateMatchData = setInterval(updateTrackedMatchInformation, 2000);
 
         return () => {
             clearInterval(findNewMatches);
             clearInterval(updateMatchData);
         };
-    }, [contract]);
+    }, [oracle]);
 
     // useEffect(() => {
     //     console.log("Tracked IDs actually changed in state:", Array.from(trackedMatchIds));
@@ -106,6 +113,5 @@ export function handleOracleInfo(contract) {
     return {
         matchIds: Array.from(trackedMatchIds),
         matchData,
-        loading
     };
 }

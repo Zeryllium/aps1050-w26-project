@@ -16,10 +16,6 @@ import contractAddress from "./contracts/contract-address.json";
 import { NoWalletDetected } from "./components/NoWalletDetected.jsx";
 import { ConnectWallet } from "./components/ConnectWallet.jsx";
 import { Loading } from "./components/Loading.jsx";
-import { Transfer } from "./components/Transfer.jsx";
-import { TransactionErrorMessage } from "./components/TransactionErrorMessage.jsx";
-import { WaitingForTransactionMessage } from "./components/WaitingForTransactionMessage.jsx";
-import { NoTokensMessage } from "./components/NoTokensMessage.jsx";
 import MatchesDashboard from "./components/MatchesDashboard.jsx";
 
 import * as UI from "./ui/ui.js";
@@ -138,59 +134,13 @@ export class Dapp extends React.Component {
 
           <hr />
 
-          <MatchesDashboard contract={this.state._oracle}/>
-
-          <hr/>
-
-          <div className="row">
-            <div className="col-12">
-              {/*
-              Sending a transaction isn't an immediate action. You have to wait
-              for it to be mined.
-              If we are waiting for one, we show a message here.
-            */}
-              {this.state.txBeingSent && (
-                  <WaitingForTransactionMessage txHash={this.state.txBeingSent} />
-              )}
-
-              {/*
-              Sending a transaction can fail in multiple ways.
-              If that happened, we show a message here.
-            */}
-              {this.state.transactionError && (
-                  <TransactionErrorMessage
-                      message={this._getRpcErrorMessage(this.state.transactionError)}
-                      dismiss={() => this._dismissTransactionError()}
-                  />
-              )}
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-12">
-              {/*
-              If the user has no tokens, we don't show the Transfer form
-            */}
-              {this.state.balance.eq(0) && (
-                  <NoTokensMessage selectedAddress={this.state.selectedAddress} />
-              )}
-
-              {/*
-              This component displays a form that the user can use to send a
-              transaction and transfer some tokens.
-              The component doesn't have logic, it just calls the transferTokens
-              callback.
-            */}
-              {this.state.balance.gt(0) && (
-                  <Transfer
-                      transferTokens={(to, amount) =>
-                          this._transferTokens(to, amount)
-                      }
-                      tokenSymbol={this.state.tokenData.symbol}
-                  />
-              )}
-            </div>
-          </div>
+          <MatchesDashboard
+              token={this.state._token}
+              oracle={this.state._oracle}
+              wager={this.state._wager}
+              selectedAddress={this.state.selectedAddress}
+              isInitializing={this.state.isInitializing}
+          />
         </div>
     );
   }
@@ -236,6 +186,7 @@ export class Dapp extends React.Component {
 
     // We first store the user's address in the component's state
     this.setState({
+      isInitializing: true,
       selectedAddress: userAddress,
     });
 
@@ -245,6 +196,10 @@ export class Dapp extends React.Component {
     // Fetching the token data and the user's balance are specific to this
     // sample project, but you can reuse the same initialization pattern.
     this._initializeEthers();
+
+    this.setState({
+      isInitializing: false
+    })
   }
 
   async _initializeEthers() {

@@ -143,15 +143,34 @@ contract Oracle is Ownable, OracleInterface {
      * @notice Test Data
      */
     function addTestData() onlyOwner external {
-        Match memory testMatch = Match(
+        Match memory testMatch0 = Match(
             1111,
             Team(12345, "HomeTeam"),
             Team(24680, "AwayTeam"),
-            1775252304,
+            1234567890,
             MatchStatus.Pending,
             0
         );
+        _addMatch(testMatch0);
 
-        _addMatch(testMatch);
+        Match memory testMatch1 = Match(
+            1112,
+            Team(33333, "HomeTeam"),
+            Team(44444, "AwayTeam"),
+            1248163264,
+            MatchStatus.Pending,
+            0
+        );
+        _addMatch(testMatch1);
+
+        Match memory testMatch2 = Match(
+            1113,
+            Team(44444, "HomeTeam"),
+            Team(55555, "AwayTeam"),
+            1359173157,
+            MatchStatus.Pending,
+            0
+        );
+        _addMatch(testMatch2);
     }
 }

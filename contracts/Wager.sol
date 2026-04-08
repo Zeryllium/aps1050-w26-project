@@ -28,10 +28,12 @@ contract Wager is Ownable {
     // Mapping for userAddress => matchId => hasUserBetOnMatch
     // Stores which matches a user has bet on
     mapping(address => mapping(uint32 => bool)) private hasUserBetOnMatch;
+    mapping(address => uint32[]) private userBetHistory;
 
     // Mapping for userAddress => matchId => hasUserClaimedMatch
     // Stores which matches a user has claimed earnings on
     mapping(address => mapping(uint32 => bool)) private hasUserClaimedMatch;
+    mapping(address => uint32[]) private userClaimHistory;
 
     OracleInterface internal oracle;
 
@@ -79,6 +81,7 @@ contract Wager is Ownable {
 
         if (!hasUserBetOnMatch[msg.sender][_matchId]) {
             hasUserBetOnMatch[msg.sender][_matchId] = true;
+            userBetHistory[msg.sender].push(_matchId);
         }
         bets[_matchId][msg.sender][_chosenTeamId] += _amount;
     }
@@ -97,6 +100,43 @@ contract Wager is Ownable {
         // Payout to the user a share proportional to their bet across all winning bets, with a house fee withheld
         uint256 payout = (wagerMatch.totalPot * (100 - housePercentage) / 100) * userBet / poolPerTeam[_matchId][oracleMatch.winner];
         hasUserClaimedMatch[msg.sender][_matchId] = true;
+        userClaimHistory[msg.sender].push(_matchId);
         require(lightToken.transfer(msg.sender, payout), "Transfer failed");
+    }
+
+    function getMatchesWithBets(address _user) external view returns(uint32[] memory) {
+        return userBetHistory[_user];
+    }
+
+    function getMatchesWithClaims(address _user) external view returns(uint32[] memory) {
+        return userClaimHistory[_user];
+    }
+
+    function getBetInfo(uint32 _matchId, address _user) external view returns (
+        uint32 chosenTeamId,
+        uint256 userStake,
+        bool claimed
+    ) {
+        OracleInterface.Match memory matchData = oracle.getMatchByID(_matchId);
+
+        if (bets[_matchId][_user][matchData.homeTeam.id] > 0) {
+            return (
+                matchData.homeTeam.id,
+                bets[_matchId][_user][matchData.homeTeam.id],
+                hasUserClaimedMatch[_user][_matchId]
+            );
+        } else if (bets[_matchId][_user][matchData.awayTeam.id] > 0){
+            return (
+                matchData.awayTeam.id,
+                bets[_matchId][_user][matchData.awayTeam.id],
+                hasUserClaimedMatch[_user][_matchId]
+            );
+        } else {
+            return (
+                0,
+                0,
+                false
+            );
+        }
     }
 }

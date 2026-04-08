@@ -1,9 +1,9 @@
-import {handleOracleInfo} from "./HandleOracleInfo.js";
+import {handleMatchInfo} from "./HandleMatchInfo.js";
 import MatchCard from "./MatchCard.jsx";
 import * as UI from "../ui/ui.js"
 
-export default function MatchesDashboard({contract}) {
-    const {matchIds, matchData, loading} = handleOracleInfo(contract);
+export default function MatchesDashboard({token, oracle, wager, selectedAddress, isInitializing}) {
+    const {matchIds, matchData} = handleMatchInfo(oracle, wager, selectedAddress, isInitializing);
 
     // console.log(`matchIds length: ${matchIds.length}`)
     // if (matchIds.length !== 0) {
@@ -29,7 +29,10 @@ export default function MatchesDashboard({contract}) {
                             <MatchCard
                                 key={`matchCard-${matchId}`}
                                 match={matchData[matchId]}
-                                isLoading={loading}
+                                token={token}
+                                wager={wager}
+                                selectedAddress={selectedAddress}
+                                isInitializing={isInitializing}
                             />
                         ))
                     )
