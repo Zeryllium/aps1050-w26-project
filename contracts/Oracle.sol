@@ -39,7 +39,16 @@ contract Oracle is Ownable, OracleInterface {
      * @notice Adds a match
      * @param _newMatch The Match object to add (as defined above)
      */
-    function addMatch(Match calldata _newMatch) onlyOwner external {
+
+    function addMatch(Match calldata _newMatch) onlyOwner public {
+        _addMatch(_newMatch);
+    }
+
+    /***
+     * @notice addMatch workaround to be callable within the contract for test data
+     * @param _newMatch The Match object to add (as defined above)
+     */
+    function _addMatch(Match memory _newMatch) internal {
         // Only new matches should be added
         require(!matchExists(_newMatch.id), "Match already exists");
 
@@ -61,7 +70,7 @@ contract Oracle is Ownable, OracleInterface {
      * @param _id The ID of the match to update
      * @param _matchData The updated match data
      */
-    function updateMatch(uint32 _id, Match calldata _matchData) onlyOwner external {
+    function updateMatch(uint32 _id, Match calldata _matchData) onlyOwner public {
         // Require that the match exists before modification
         require(matchExists(_id), "Match does not exist");
 
@@ -134,15 +143,15 @@ contract Oracle is Ownable, OracleInterface {
      * @notice Test Data
      */
     function addTestData() onlyOwner external {
-        this.addMatch(
-            Match(
-                1111,
-                Team(12345, "HomeTeam"),
-                Team(24680, "AwayTeam"),
-                1775252304,
-                MatchStatus.Pending,
-                0
-            )
+        Match memory testMatch = Match(
+            1111,
+            Team(12345, "HomeTeam"),
+            Team(24680, "AwayTeam"),
+            1775252304,
+            MatchStatus.Pending,
+            0
         );
+
+        _addMatch(testMatch);
     }
 }
