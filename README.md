@@ -17,7 +17,7 @@
     ```
 5. Run the following command
     ```shell
-    npm ci
+    npm run setup
     ```
 6. Verify that the installation worked by checking for the presence of these two directories:
    1. `./node_modules`
