@@ -1,90 +1,91 @@
-# Hardhat Boilerplate
+# Sports Betting dApp
 
-This repository contains a sample project that you can use as the starting point
-for your Ethereum project. It's also a great fit for learning the basics of
-smart contract development.
+### This dApp is build on top of the example project `hardhat-boilerplate`. See the original `README.md` file at `hardhat-boilerplate_README.md`. Build on the example `hardhat-boilerplate` project on GitHub: [https://github.com/NomicFoundation/hardhat-boilerplate](https://github.com/NomicFoundation/hardhat-boilerplate) 
 
-This project is intended to be used with the
-[Hardhat Beginners Tutorial](https://hardhat.org/tutorial), but you should be
-able to follow it by yourself by reading the README and exploring its
-`contracts`, `tests`, `scripts` and `frontend` directories.
+## Startup Instructions
+1. Install `git` from their official website [https://git-scm.com/install/](https://git-scm.com/install/)
+2. Make a new directory somewhere on your computer, navigate to that folder in the command line, and `git clone` this repository into that folder.
+    ```shell
+   mkdir aps1050
+   cd aps1050
+   git clone https://github.com/Zeryllium/aps1050-w26-project.git
+   ```
+3. Open up the project using [IntelliJ IDEA](https://www.jetbrains.com/idea/download/) or another IDE of your choice.
+4. Open a console running in the root directory of this project.
+    ```shell
+    cd /path/to/aps1050-w26-project
+    ```
+5. Run the following command
+    ```shell
+    npm ci
+    ```
+6. Verify that the installation worked by checking for the presence of these two directories:
+   1. `./node_modules`
+   2. `./frontend/node_modules`
+   
+## Run Instructions
+The Frontend polls the Oracle for MatchIds every 10 seconds and fetches MatchData pertaining to those matches every 2 seconds. You can change this interval if you would like by modifying `HandleMatchInfo.js` in the Interval initialization `findNewMatches` and `updateMatchData`.
+1. Open **THREE SEPARATE CONSOLES** and run the following commands in the order that is given. Remember to replace `/path/to/` with your actual path to the project root.
+2. **Console A**  
+    ```shell
+    cd /path/to/aps1050-w26-project
+    npx hardhat node
+    ``` 
+3. **Console B**
+    ```shell
+    cd /path/to/aps1050-w26-project
+    npx hardhat clean
+    npx hardhat compile
+    npx hardhat run scripts/deploy.js --network localhost
+    ```
+4. **Console C**    
+    ```shell
+    cd /path/to/aps1050-w26-project/frontend
+    npm run dev
+    ```
+5. Open a browser with the MetaMask addon and configure the Network for this. 
+   <br/><img src="./MetaMask_Config_Local_HardHat_Node.png" width="50%"><br/>
+6. Navigate to the frontend webpage [http://localhost:5173/](http://localhost:5173/)
+7. Connect MetaMask to the webpage by clicking the button.
+8. You may press the "Faucet" button to obtain 1 ETH and 100 LIT for use in this dApp.
+9. Add new matches to the blockchain through the Oracle in <br/>**Console B**
+   ```shell
+   npx hardhat run scripts/sample_run_0.js --network localhost
+   ```
+10. Go back to the website and place bets. You may swap MetaMask wallets and accounts to play the role of multiple users. **You must clear the page cache and reload the page with `Ctrl+F5` if you choose to switch accounts.** <br/><br/> **Note: There is a small bug where the frontend displays incorrect match data when switching accounts for the first time. Updating the states of the matches in Step 11 will fix this issue for the rest of the session.**<br/><br/>  
+11. Update the state of the matches in the blockchain through the Oracle in <br/>**Console B**
+   ```shell
+   npx hardhat run scripts/sample_run_1.js --network localhost
+   ```
+12. Observe that matches 1, 2, and 3 have changed state from *Pending* to *Underway*. If you reload the page at this point, matches that you have not bet on and are not *Pending* will no longer be tracked for your account. Observe that you can no longer place bets on matches not in *Pending*.
+13. Update the state of the matches in the blockchain through the Oracle in <br/>**Console B**
+   ```shell
+   npx hardhat run scripts/sample_run_2.js --network localhost
+   ```
+14. Observe that matches 1, 2, and 3 have changed state from *Underway* to *Finalized*. Also observe that match 4 has changed state from *Pending* to *Underway*.
+    1. Bets that you have won will pay out a proportional share of the total pot, minus a house fee (2%). If you did not switch accounts and add bets to the other side, this payout will always be lower than your initial bet proportional by exactly the house fee.
+    2. Bets that you have lost will indicate that you have lost and will not allow you to claim any earnings for those lost bets.
+15. Update the state of the matches in the blockchain through the Oracle in <br/>**Console B**
+   ```shell
+   npx hardhat run scripts/sample_run_3.js --network localhost
+   ```
+16. Observe that match 4 has changed state from *Underway* to *Finalized*. Also observe that any matches whose winning bets you have claimed have stopped being tracked by the frontend.
 
-## Quick start
-
-The first things you need to do are cloning this repository and installing its
-dependencies:
-
-```sh
-git clone https://github.com/NomicFoundation/hardhat-boilerplate.git
-cd hardhat-boilerplate
-npm install
-```
-
-Once installed, let's run Hardhat's testing network:
-
-```sh
-npx hardhat node
-```
-
-Then, on a new terminal, go to the repository's root folder and run this to
-deploy your contract:
-
-```sh
-npx hardhat run scripts/deploy.js --network localhost
-```
-
-Finally, we can run the frontend with:
-
-```sh
-cd frontend
-npm install
-npm start
-```
-
-Open [http://localhost:3000/](http://localhost:3000/) to see your Dapp. You will
-need to have [Coinbase Wallet](https://www.coinbase.com/wallet) or [Metamask](https://metamask.io) installed and listening to
-`localhost 8545`.
-
-## User Guide
-
-You can find detailed instructions on using this repository and many tips in [its documentation](https://hardhat.org/tutorial).
-
-- [Writing and compiling contracts](https://hardhat.org/tutorial/writing-and-compiling-contracts/)
-- [Setting up the environment](https://hardhat.org/tutorial/setting-up-the-environment/)
-- [Testing Contracts](https://hardhat.org/tutorial/testing-contracts/)
-- [Setting up your wallet](https://hardhat.org/tutorial/boilerplate-project#how-to-use-it)
-- [Hardhat's full documentation](https://hardhat.org/docs/)
-
-For a complete introduction to Hardhat, refer to [this guide](https://hardhat.org/getting-started/#overview).
-
-## What's Included?
-
-This repository uses our recommended hardhat setup, by using our [`@nomicfoundation/hardhat-toolbox`](https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-toolbox). When you use this plugin, you'll be able to:
-
-- Deploy and interact with your contracts using [ethers.js](https://docs.ethers.io/v5/) and the [`hardhat-ethers`](https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-ethers) plugin.
-- Test your contracts with [Mocha](https://mochajs.org/), [Chai](https://chaijs.com/) and our own [Hardhat Chai Matchers](https://hardhat.org/hardhat-chai-matchers) plugin.
-- Interact with Hardhat Network with our [Hardhat Network Helpers](https://hardhat.org/hardhat-network-helpers).
-- Verify the source code of your contracts with the [hardhat-etherscan](https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan) plugin.
-- Get metrics on the gas used by your contracts with the [hardhat-gas-reporter](https://github.com/cgewecke/hardhat-gas-reporter) plugin.
-- Measure your tests coverage with [solidity-coverage](https://github.com/sc-forks/solidity-coverage).
-
-This project also includes [a sample frontend/Dapp](./frontend), which uses [Create React App](https://github.com/facebook/create-react-app).
-
-## Troubleshooting
-
-- `Invalid nonce` errors: if you are seeing this error on the `npx hardhat node`
-  console, try resetting your Metamask account. This will reset the account's
-  transaction history and also the nonce. Open Metamask, click on your account
-  followed by `Settings > Advanced > Clear activity tab data`.
-
-## Setting up your editor
-
-[Hardhat for Visual Studio Code](https://hardhat.org/hardhat-vscode) is the official Hardhat extension that adds advanced support for Solidity to VSCode. If you use Visual Studio Code, give it a try!
-
-## Getting help and updates
-
-If you need help with this project, or with Hardhat in general, please read [this guide](https://hardhat.org/hardhat-runner/docs/guides/getting-help) to learn where and how to get it.
-
-For the latest news about Hardhat, [follow us on Twitter](https://twitter.com/HardhatHQ), and don't forget to star [our GitHub repository](https://github.com/NomicFoundation/hardhat)!
-
-**Happy _building_!**
+## Run Reset Instructions
+At the end of each run, you **MUST** do **ALL** the following:
+1. Terminate the local hardhat node <br/>**Console A**
+   ```shell
+   Ctrl+C
+   ```
+2. Terminate the frontend service <br/>**Console C**
+   ```shell
+   Ctrl+C
+   ```
+3. Clear the deployed artifacts <br/>**Console B**
+   ```shell
+   npx hardhat clean
+   ```
+4. Clear the browser cache of the webpage with `Ctrl+F5` (It is ok if it says it cannot connect to the webserver. We turned it off in step 2.)
+5. **VERY IMPORTANT** Clear the MetaMask activity data **FOR ALL ACCOUNTS** that you used in this demo.
+   <br/><img src="./MetaMask_Reset_Between_Runs.png" width="50%"><br/>
+6. Resume at the top of the Run Instructions
