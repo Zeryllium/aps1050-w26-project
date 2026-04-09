@@ -3,6 +3,7 @@
 ### This dApp is build on top of the example project `hardhat-boilerplate`. See the original `README.md` file at `hardhat-boilerplate_README.md`. Build on the example `hardhat-boilerplate` project on GitHub: [https://github.com/NomicFoundation/hardhat-boilerplate](https://github.com/NomicFoundation/hardhat-boilerplate) 
 
 ## Startup Instructions
+### Starting using Git
 1. Install `git` from their official website [https://git-scm.com/install/](https://git-scm.com/install/)
 2. Make a new directory somewhere on your computer, navigate to that folder in the command line, and `git clone` this repository into that folder.
     ```shell
@@ -22,7 +23,10 @@
 6. Verify that the installation worked by checking for the presence of these two directories:
    1. `./node_modules`
    2. `./frontend/node_modules`
-   
+
+### Starting from the `.zip` file archive
+1. Make a new directory somewhere on your computer, navigate to that folder, and simply unpack the `.zip` file into this directory.
+
 ## Run Instructions
 The Frontend polls the Oracle for MatchIds every 10 seconds and fetches MatchData pertaining to those matches every 2 seconds. You can change this interval if you would like by modifying `HandleMatchInfo.js` in the Interval initialization `findNewMatches` and `updateMatchData`.
 1. Open **THREE SEPARATE CONSOLES** and run the following commands in the order that is given. Remember to replace `/path/to/` with your actual path to the project root.
